@@ -71,13 +71,13 @@
               owner = "Starforge-Atelier";
               repo = "gdb-tricore";
               rev = "refs/heads/main";
-              sha256 = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="; # 用 nix-output 获取真实哈希
+              sha256 = "sha256-ciHqf6XoWHphRSoOkAG1roNqTTx4xsDeAUmv0Bfzj1k="; # 用 nix-output 获取真实哈希
             };
 
             nativeBuildInputs = with pkgs; [
               bison
               flex
-              autoconf
+              autoconf269
               automake
               libtool
               pkg-config
@@ -106,6 +106,8 @@
 
             # out-of-tree 构建更干净
             preConfigure = ''
+              export AUTOCONF=${pkgs.autoconf269}/bin/autoconf
+              echo "Using $(autoconf --version)"
               mkdir build
               cd build
             '';
