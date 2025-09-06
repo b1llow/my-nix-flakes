@@ -21,31 +21,7 @@
       {
         devShells = {
           default = pkgs.mkShell.override { stdenv = pkgs.gcc11Stdenv; } {
-            nativeBuildInputs = with pkgs; [
-              bison
-              flex
-              autoconf
-              automake
-              libtool
-              pkg-config
-              python311
-              expect
-              which
-              gawk
-            ];
-            buildInputs = with pkgs; [
-              texinfo
-              readline
-              ncurses
-              zlib
-              expat
-              dejagnu
-              zstd
-              gmp
-              mpfr
-              libmpc
-              isl
-            ];
+            inputsFrom = [ self.packages.${system}.default ];
             shellHook = ''
               export CC=gcc
               export CXX=g++
@@ -62,11 +38,10 @@
             lib = pkgs.lib;
             target = "tricore-elf";
           in
-          pkgs.stdenv.mkDerivation rec {
+          pkgs.gcc11Stdenv.mkDerivation rec {
             pname = "gdb-tricore";
-            version = "10.0.50"; # 改成你要的版本
+            version = "10.0.50";
 
-            # 选一种 src：tarball 或你的 Git 仓库
             src = pkgs.fetchFromGitHub {
               owner = "Starforge-Atelier";
               repo = "gdb-tricore";
@@ -91,7 +66,7 @@
             buildInputs =
               with pkgs;
               [
-                readline
+                readline70
                 ncurses
                 zlib
                 expat
@@ -104,9 +79,9 @@
               ]
               ++ lib.optionals pkgs.stdenv.isDarwin [ pkgs.libiconv ];
 
-            # out-of-tree 构建更干净
             preConfigure = ''
               export AUTOCONF=${pkgs.autoconf269}/bin/autoconf
+              export NIX_CFLAGS_COMPILE="$NIX_CFLAGS_COMPILE -Wno-error"
               echo "Using $(autoconf --version)"
               mkdir build
               cd build
@@ -115,18 +90,18 @@
             configureFlags = [
               "--prefix=${placeholder "out"}"
               "--enable-gdb"
-              "--disable-binutils" # 如果抓的是 binutils-gdb 合仓，这样只构建 gdb
+              "--disable-binutils"
               "--with-python=${pkgs.python311}"
               "--with-expat"
-              "--with-lzma"
+              "--with-zstd"
               "--with-system-readline"
               "--enable-tui"
-              "--target=${target}" # 改成你的 cross 目标即可做 cross-gdb
+              "--target=${target}"
             ];
 
             enableParallelBuilding = true;
-            doCheck = false; # gdb testsuite 超慢，通常关掉
-
+            doCheck = false;
+            dontUpdateAutotoolsGnuConfigScripts = true;
             meta = with lib; {
               description = "GDB with TriCore architecture support";
               license = licenses.gpl3Plus;
