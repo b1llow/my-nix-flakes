@@ -6,8 +6,15 @@
     flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = { self, nixpkgs, flake-utils, ... }:
-    flake-utils.lib.eachDefaultSystem (system:
+  outputs =
+    {
+      self,
+      nixpkgs,
+      flake-utils,
+      ...
+    }:
+    flake-utils.lib.eachDefaultSystem (
+      system:
       let
         pkgs = import nixpkgs { inherit system; };
 
@@ -35,23 +42,52 @@
           fetchSubmodules = true;
         };
 
-        tricoreSources = pkgs.runCommandNoCC "tricore-toolchain-sources" {}
-          ''
-            mkdir -p $out
-            cp -r ${tricoreGccSrc} $out/gcc
-            cp -r ${tricoreBinutilsSrc} $out/binutils
-            cp -r ${tricoreNewlibSrc} $out/newlib
-          '';
-      in {
-        packages.default = tricoreSources;
-        packages.tricoreSources = tricoreSources;
+        binutils = pkgs.binutils.overrideAttrs (old: {
+          version = "2.42+tricore";
+          src = tricoreBinutilsSrc;
+          patches = [ ];
+          configureFlags = (old.configureFlags or [ ]) ++ [
+            "--target=tricore-elf"
+            "--disable-nls"
+            "--disable-werror"
+          ];
+        });
 
-        devShells.default = pkgs.mkShell {
-          inputsFrom = [ self.packages.${system}.default ];
-          shellHook = ''
-            export NIX_CFLAGS_COMPILE="$NIX_CFLAGS_COMPILE -Wno-error"
-          '';
-        };
+        gcc-unwrapped = pkgs.gcc-unwrapped.overrideAttrs (old: {
+          version = "11.3.0-+tricore";
+          src = tricoreGccSrc;
+          patches = [ ];
+          # 交叉环境下 nixpkgs 会自动加 --target=tricore-elf
+          configureFlags = (old.configureFlags or [ ]) ++ [
+            "--target=tricore-elf"
+            "--enable-languages=c,c++"
+            "--with-newlib"
+            "--disable-nls"
+            # 下面这些在 bare-metal 上常见地关掉，减少不必要组件
+            "--disable-libssp"
+            "--disable-libquadmath"
+            "--disable-libsanitizer"
+            # Darwin 上如遇 LTO/插件构建问题可再加：
+            # "--disable-lto" "--disable-plugin"
+          ];
+        });
+
+        newlib = pkgs.newlib.overrideAttrs (old: {
+          version = "4.3.0+tricore";
+          src = tricoreNewlibSrc;
+          patches = [ ];
+          configureFlags = (old.configureFlags or [ ]) ++ [
+            "--target=tricore-elf"
+            "--disable-newlib-supplied-syscalls"
+            "--disable-nls"
+          ];
+        });
+
+      in
+      {
+        packages.default = gcc-unwrapped;
+        packages.binutils = binutils;
+        packages.newlib = newlib;
       }
     );
 }
