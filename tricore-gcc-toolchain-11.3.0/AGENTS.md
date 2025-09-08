@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 - Root files: `flake.nix` (outputs and dev shells) and `flake.lock` (pinned inputs).
-- This flake packages a TriCore-enabled GCC (`packages.default`) and exposes a development shell (`devShells.default`).
+- This flake packages a TriCore-enabled GCC (`packages.default`)
 - Upstream GCC sources are fetched from GitHub during the build; no local source tree lives here.
 
 ## Build, Test, and Development Commands
@@ -13,7 +13,7 @@
 
 ## Coding Style & Naming Conventions
 - Nix files: 2‑space indentation, trailing commas, and concise attribute names.
-- Attribute sets follow Nixpkgs patterns (e.g., `packages`, `devShells`, `outputs`).
+- Attribute sets follow Nixpkgs patterns (e.g., `packages`, `outputs`).
 - Prefer lowerCamelCase for attribute keys and snake_case for local variables.
 - Format before committing with either `nixfmt`.
 
