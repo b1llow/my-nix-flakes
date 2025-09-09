@@ -170,6 +170,8 @@
           "--disable-libssp"
           "--disable-test-suite"
           "--disable-lto"
+          "--with-as=${tricore-binutils}/bin/${program-prefix}as"
+          "--with-ld=${tricore-binutils}/bin/${program-prefix}ld"
         ];
 
         tricore-gcc-stage1 = mystdenv.mkDerivation (
@@ -180,10 +182,7 @@
             src = tricoreGccSrc;
             buildInputs = configCommon.buildInputs ++ [ tricore-binutils ];
             nativeBuildInputs = configCommon.nativeBuildInputs ++ [ tricore-binutils ];
-            configureFlags = gccConfigureFlags ++ [
-              "--with-as=${tricore-binutils}/bin/${program-prefix}as"
-              "--with-ld=${tricore-binutils}/bin/${program-prefix}ld"
-            ];
+            configureFlags = gccConfigureFlags;
             hardeningDisable = [ "format" ];
             makeFlags = [
               "all-gcc"
@@ -220,7 +219,6 @@
             '';
             configureFlags = [
               "--target=${target-name}"
-              "--disable-libgloss"
             ];
           }
         );
@@ -239,8 +237,22 @@
               tricore-binutils
               tricore-newlib
             ];
-            configureFlags = gccConfigureFlags;
+            configureFlags = gccConfigureFlags ++ [
+              "--with-sysroot=${tricore-newlib}/${target-name}"
+              "--with-native-system-header-dir=/include"
+            ];
+            preConfigure = ''
+              mkdir build && cd build
+            '';
+            configureScript = ''
+              ../configure
+            '';
             hardeningDisable = [ "format" ];
+            makeFlags = [
+              "all-gcc"
+              "all-target-libgcc"
+            ];
+            installTargets = "install-gcc install-target-libgcc";
           }
         );
 
