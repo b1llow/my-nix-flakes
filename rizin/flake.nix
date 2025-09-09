@@ -42,6 +42,7 @@
             patches = builtins.filter (
               x: builtins.baseNameOf x != "0001-fix-compilation-with-clang.patch"
             ) old.patches;
+            buildInputs = old.buildInputs ++ [ pkgs.openssl.dev ];
 
             meta = with pkgs.lib; {
               description = "Rizin - Reverse Engineering Framework";
