@@ -25,15 +25,24 @@
           inherit system;
           overlays = [ ocaml-overlay.overlays.default ];
         };
+
         rizin = pkgs.callPackage ./packages/rizin.nix { };
         qemu-bap = pkgs.callPackage ./packages/qemu-bap.nix {
           ocaml414 = (pkgs.ocaml-ng.ocamlPackages_4_14 or pkgs.ocamlPackages_4_14);
-         };
+        };
+        gdb-tricore = pkgs.callPackage ./packages/gdb-tricore.nix { };
+        gcc-toolchain-tricore = pkgs.callPackage ./packages/gcc-toolchain-tricore.nix { };
       in
       {
         packages = {
-          inherit rizin;
-          inherit qemu-bap;
+          inherit rizin qemu-bap gdb-tricore;
+          inherit (gcc-toolchain-tricore)
+            binutils-mcs-elf
+            binutils-tricore-elf
+            newlib-tricore-elf
+            gcc-tricore-elf
+            gcc-toolchain-tricore
+            ;
         };
       }
     );
