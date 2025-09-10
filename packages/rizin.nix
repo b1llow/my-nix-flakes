@@ -10,9 +10,11 @@
   ...
 }:
 let
+  inherit (builtins) filter baseNameOf;
+
   fetchMesonDeps =
     {
-      name ? "meson-deps",
+      pname,
       src ? null,
       hash ? "",
       impureEnvVars ? [ ],
@@ -32,7 +34,7 @@ let
     stdenvNoCC.mkDerivation (
       args
       // {
-        name = "${name}-meson-deps";
+        name = "${pname}-meson-deps";
         buildPhase = ''
           runHook preBuild
 
@@ -83,18 +85,19 @@ let
     sha256 = "sha256-qkkl0mIT056eirDKMUi9CR0dX1iTI+Uu+M86ueDO3P0=";
   };
   rizinDeps = fetchMesonDeps {
-    name = "rizin";
+    pname = "rizin";
     src = rizinSrc;
-    hash = lib.fakeSha256;
   };
 in
 rizin.overrideAttrs (old: {
   pname = "rizin";
   version = "0.9.0-dev";
   src = rizinSrc;
-  patches = builtins.filter (
-    x: builtins.baseNameOf x != "0001-fix-compilation-with-clang.patch"
-  ) old.patches;
+  patches = filter (x: baseNameOf x != "0001-fix-compilation-with-clang.patch") old.patches;
+
+  mesonFlags = [ "-Dportable=true" ];
+
+  buildInputs = [ ];
 
   preConfigure = old.preConfigure + ''
     rm -rf subprojects
