@@ -6,29 +6,29 @@
   fetchFromGitHub,
   lib,
   stdenv,
+  mesonTools,
   ...
 }:
 let
   qemuBase = qemu.override {
     enableDocs = false;
   };
-in
-qemuBase.overrideAttrs (old: rec {
-  version = "10.0.2+bap";
   src = fetchFromGitHub {
     owner = "Starforge-Atelier";
     repo = "qemu";
     rev = "refs/heads/trace-10-tricore";
-    sha256 = "sha256-k/IKmU3qIUcXqWLNVc73f6iB1hv9Gb/eMKstn/UkUzU=";
+    sha256 = "";
     fetchSubmodules = true;
-    postFetch = ''
-      cd "$out"
-      for prj in subprojects/*.wrap; do
-        ${lib.getExe meson} subprojects download "$(basename "$prj" .wrap)"
-      done
-      find subprojects -type d -name .git -prune -execdir rm -r {} +
-    '';
   };
+  mesonDeps = mesonTools.fetchDeps {
+    pname = "qemu-bap";
+    inherit src;
+  };
+in
+qemuBase.overrideAttrs (old: rec {
+  version = "10.0.2+bap";
+  inherit src;
+  inherit mesonDeps;
 
   configureFlags = [
     "--enable-debug"
@@ -43,6 +43,7 @@ qemuBase.overrideAttrs (old: rec {
 
   nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [
     ocaml414.piqi
+    mesonTools.configHook
   ];
   buildInputs = (old.buildInputs or [ ]) ++ [
     protobufc

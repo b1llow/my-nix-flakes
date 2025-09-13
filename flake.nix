@@ -25,13 +25,18 @@
           inherit system;
           overlays = [ ocaml-overlay.overlays.default ];
         };
+        inherit (pkgs) callPackage nixfmt-tree;
 
-        rizin = pkgs.callPackage ./packages/rizin.nix { };
-        qemu-bap = pkgs.callPackage ./packages/qemu-bap.nix {
+        mesonTools = callPackage ./lib/meson-tools { };
+
+        rizin = callPackage ./packages/rizin.nix { inherit mesonTools; };
+        qemu-bap = callPackage ./packages/qemu-bap.nix {
           ocaml414 = (pkgs.ocaml-ng.ocamlPackages_4_14 or pkgs.ocamlPackages_4_14);
+          inherit mesonTools;
         };
-        gdb-tricore = pkgs.callPackage ./packages/gdb-tricore.nix { };
-        gcc-toolchain-tricore = pkgs.callPackage ./packages/gcc-toolchain-tricore.nix { };
+        gdb-tricore = callPackage ./packages/gdb-tricore.nix { };
+        gcc-toolchain-tricore = callPackage ./packages/gcc-toolchain-tricore.nix { };
+
       in
       {
         packages = {
@@ -60,9 +65,15 @@
           };
           tricore-elf-gcc = {
             type = "app";
-            program = "${gcc-toolchain-tricore}/bin/tricore-elf-gcc";
+            program = "${gcc-toolchain-tricore.gcc-tricore-elf}/bin/tricore-elf-gcc";
           };
         };
+
+        lib = {
+          inherit mesonTools;
+        };
+
+        formatter = nixfmt-tree;
       }
     );
 }
