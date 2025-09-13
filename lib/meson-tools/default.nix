@@ -34,6 +34,7 @@ rec {
           runHook preBuild
 
           deps=subprojects
+          echo "Installing meson dependencies to $(realpath $deps)"
           meson $deps download
           find $deps -type d -name ".git" -prune -exec rm -rf {} +
           cp -r $deps $out/
@@ -67,9 +68,8 @@ rec {
           else
             "/no-cert-file.crt";
 
-        dontUseMesonConfigure = true;
-        dontUseMesonCheck = true;
-        dontUseMesonInstall = true;
+
+        phases = [  "unpackPhase" "buildPhase" ];
         outputHashMode = "recursive";
       }
     );

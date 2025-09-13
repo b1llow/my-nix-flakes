@@ -17,7 +17,7 @@ let
     owner = "Starforge-Atelier";
     repo = "qemu";
     rev = "refs/heads/trace-10-tricore";
-    sha256 = "";
+    sha256 = "sha256-hIuRM4HmE1H/TIpufEVru9uZLGyKnjcIor6YBn2DY3g=";
     fetchSubmodules = true;
   };
   mesonDeps = mesonTools.fetchDeps {
