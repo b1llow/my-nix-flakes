@@ -68,8 +68,10 @@ rec {
           else
             "/no-cert-file.crt";
 
-
-        phases = [  "unpackPhase" "buildPhase" ];
+        phases = [
+          "unpackPhase"
+          "buildPhase"
+        ];
         outputHashMode = "recursive";
       }
     );
