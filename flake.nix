@@ -44,6 +44,25 @@
             gcc-toolchain-tricore
             ;
         };
+
+        apps = {
+          rizin = {
+            type = "app";
+            program = "${rizin}/bin/rizin";
+          };
+          qemu-system-tricore = {
+            type = "app";
+            program = "${qemu-bap}/bin/qemu-system-tricore";
+          };
+          tricore-elf-gdb = {
+            type = "app";
+            program = "${gdb-tricore}/bin/tricore-elf-gdb";
+          };
+          tricore-elf-gcc = {
+            type = "app";
+            program = "${gcc-toolchain-tricore}/bin/tricore-elf-gcc";
+          };
+        };
       }
     );
 }
