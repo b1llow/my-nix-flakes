@@ -29,6 +29,7 @@ let
   mesonDeps = mesonTools.fetchDeps {
     pname = "qemu-bap";
     inherit src;
+    sha256 = "sha256-xVR3XB7RpQ2eWgLBbBjGIzf4Bb5UCbg9Dn599ncLkPo=";
   };
 in
 qemuBase.overrideAttrs (old: rec {

@@ -20,6 +20,7 @@ let
   mesonDeps = mesonTools.fetchDeps {
     pname = "rizin";
     inherit src;
+    sha256 = "sha256-BzaDCuKfwkKCkif1N3Nu0iCgk2yUfI2X3jvZc4BNULw=";
   };
 in
 rizin.overrideAttrs (old: {

@@ -11,21 +11,9 @@ rec {
     {
       pname,
       src ? null,
-      hash ? "",
-      impureEnvVars ? [ ],
+      sha256 ? "",
+      ...
     }@args:
-    let
-      hash_ =
-        if hash != "" then
-          {
-            outputHash = hash;
-          }
-        else
-          {
-            outputHash = "";
-            outputHashAlgo = "sha256";
-          };
-    in
     stdenvNoCC.mkDerivation (
       args
       // {
@@ -48,31 +36,14 @@ rec {
           cacert
         ];
 
-        impureEnvVars =
-          lib.fetchers.proxyImpureEnvVars
-          ++ impureEnvVars
-          ++ [
-            # This variable allows the user to pass additional options to curl
-            "NIX_CURL_FLAGS"
-          ];
-        SSL_CERT_FILE =
-          if
-            (
-              hash_.outputHash == ""
-              || hash_.outputHash == lib.fakeSha256
-              || hash_.outputHash == lib.fakeSha512
-              || hash_.outputHash == lib.fakeHash
-            )
-          then
-            "${cacert}/etc/ssl/certs/ca-bundle.crt"
-          else
-            "/no-cert-file.crt";
-
+        impureEnvVars = lib.fetchers.proxyImpureEnvVars;
         phases = [
           "unpackPhase"
           "buildPhase"
         ];
         outputHashMode = "recursive";
+        outputHashAlgo = "sha256";
+        outputHash = if sha256 == "" then lib.fakeSha256 else sha256;
       }
     );
 
