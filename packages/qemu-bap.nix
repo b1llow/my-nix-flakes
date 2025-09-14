@@ -11,7 +11,9 @@
 }:
 let
   qemu' = qemu.override {
+    pluginsSupport = true;
     enableDocs = false;
+    guestAgentSupport = false;
     numaSupport = false;
     seccompSupport = false;
     alsaSupport = false;
@@ -23,7 +25,6 @@ let
     vncSupport = false;
     smartcardSupport = false;
     spiceSupport = false;
-    spice = false;
     ncursesSupport = false;
     usbredirSupport = false;
     xenSupport = false;
@@ -64,13 +65,13 @@ qemu'.overrideAttrs (old: rec {
   inherit mesonDeps;
 
   configureFlags = [
-    "--enable-debug"
-    "--enable-asan"
     "--without-default-features"
     "--target-list=tricore-softmmu"
-    "--enable-plugins"
+    "--enable-debug"
+    "--enable-asan"
     "--enable-user"
     "--enable-system"
+    "--enable-plugins"
     "--disable-docs"
   ];
 
