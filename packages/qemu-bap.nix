@@ -10,8 +10,34 @@
   ...
 }:
 let
-  qemuBase = qemu.override {
+  qemu' = qemu.override {
     enableDocs = false;
+    numaSupport = false;
+    seccompSupport = false;
+    alsaSupport = false;
+    pulseSupport = false;
+    pipewireSupport = false;
+    sdlSupport = false;
+    jackSupport = false;
+    gtkSupport = false;
+    vncSupport = false;
+    smartcardSupport = false;
+    spiceSupport = false;
+    spice = false;
+    ncursesSupport = false;
+    usbredirSupport = false;
+    xenSupport = false;
+    cephSupport = false;
+    glusterfsSupport = false;
+    openGLSupport = false;
+    rutabagaSupport = false;
+    virglSupport = false;
+    libiscsiSupport = false;
+    smbdSupport = false;
+    tpmSupport = false;
+    uringSupport = false;
+    canokeySupport = false;
+    capstoneSupport = false;
   };
   bap-frame = fetchFromGitHub {
     owner = "b1llow";
@@ -32,7 +58,7 @@ let
     sha256 = "sha256-xVR3XB7RpQ2eWgLBbBjGIzf4Bb5UCbg9Dn599ncLkPo=";
   };
 in
-qemuBase.overrideAttrs (old: rec {
+qemu'.overrideAttrs (old: rec {
   version = "10.0.2+bap";
   inherit src;
   inherit mesonDeps;
