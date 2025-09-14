@@ -1,5 +1,7 @@
 # b1llow's Nix Flakes
 
+[![Nix CI](https://github.com/b1llow/nix/actions/workflows/nix.yml/badge.svg)](https://github.com/b1llow/nix/actions/workflows/nix.yml)
+
 ## Overview
 This repository is a collection of Nix Flakes for managing various packages and tools. The structure is modular, with each package defined in its own file under the `packages/` directory. Shared utilities and scripts are located in the `lib/` directory.
 
