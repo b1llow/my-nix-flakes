@@ -52,7 +52,7 @@ jobs:
           authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
 
       - name: Build ${{ matrix.package }}
-        run: nix build .#${{ matrix.package }}
+        run: nix build .#${{ matrix.package }} -L --debug
 
   formatting:
     runs-on: ubuntu-latest
