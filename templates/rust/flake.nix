@@ -58,7 +58,9 @@
 
         devShells = {
           default = pkgs.mkShell {
-            inputFrom = self.packages.${system}.default;
+            inputsFrom = [
+              self.packages.${system}.default
+            ];
             packages = [
               pkgs.rust-analyzer
               pkgs.cargo-watch
