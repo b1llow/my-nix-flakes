@@ -64,7 +64,7 @@ jobs:
           name: hoshinoaya
           authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
 
-      - name: Build ${{ matrix.package }}
+      - name: Build
         run: nix build . -L
 
   formatting:
@@ -81,4 +81,4 @@ jobs:
       - name: Check formatting
         run: |
           nix fmt -- --ci .
-          nix shell nixpkgs#cargo -c cargo fmt --check
+          nix shell . -c cargo fmt --check
