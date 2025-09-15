@@ -1,8 +1,8 @@
 {
-  ocaml414,
   qemu,
   meson,
   protobufc,
+  ocaml-ng,
   fetchFromGitHub,
   lib,
   stdenv,
@@ -76,7 +76,7 @@ qemu'.overrideAttrs (old: rec {
   ];
 
   nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [
-    ocaml414.piqi
+    ocaml-ng.ocamlPackages_4_14.piqi
     mesonTools.configHook
   ];
   buildInputs = (old.buildInputs or [ ]) ++ [
