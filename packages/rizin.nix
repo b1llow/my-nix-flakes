@@ -14,13 +14,13 @@ let
   src = fetchFromGitHub {
     owner = "rizinorg";
     repo = "rizin";
-    rev = "refs/heads/dev";
-    sha256 = "sha256-qkkl0mIT056eirDKMUi9CR0dX1iTI+Uu+M86ueDO3P0=";
+    rev = "976671d660fdce620ca84ecc99533dba237df9af";
+    sha256 = "sha256-45HD6dYh2ptyzH3A/tVzp/3Pe/qcI38ylPkWB3WMu7A=";
   };
   mesonDeps = mesonTools.fetchDeps {
     pname = "rizin";
     inherit src;
-    sha256 = "sha256-BzaDCuKfwkKCkif1N3Nu0iCgk2yUfI2X3jvZc4BNULw=";
+    sha256 = "sha256-XKbhiQIfKpdwu0FHLMSADNpWgpI8zFbmRBVPTjPiY3E=";
   };
 in
 rizin.overrideAttrs (old: {
