@@ -10,6 +10,7 @@ mesonDepsConfigHook() {
 
     rm -rf subprojects
     cp -r ${mesonDeps} subprojects
+    chmod +w subprojects
 
     echo "Finished mesonDepsConfigHook"
 }
