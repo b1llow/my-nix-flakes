@@ -71,16 +71,18 @@ stdenv.mkDerivation rec {
 
   preConfigure = ''
     export AUTOCONF=${autoconf269}/bin/autoconf
-    export NIX_CFLAGS_COMPILE="$NIX_CFLAGS_COMPILE -Wno-error"
     echo "Using $(autoconf --version)"
     mkdir build
     cd build
   '';
   configureScript = "../configure";
+  CFLAGS = "-Wno-error -Wno-error=incompatible-pointer-types";
+  CXXFLAGS = "${CFLAGS}";
   configureFlags = [
     "--prefix=${placeholder "out"}"
     "--enable-gdb"
     "--disable-binutils"
+    "--disable-werror"
     "--with-python=${python311}"
     "--with-expat"
     "--with-zstd"

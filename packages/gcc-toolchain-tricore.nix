@@ -53,7 +53,7 @@ let
     fetchSubmodules = true;
   };
 
-  configCommon = {
+  configCommon = rec {
     nativeBuildInputs = [
       texinfo
       which
@@ -72,6 +72,8 @@ let
       isl
     ]
     ++ (lib.optional hostPlatform.isDarwin gnused);
+    CFLAGS = "-Wno-error -Wno-error=incompatible-pointer-types";
+    CXXFLAGS = "${CFLAGS}";
     enableParallelBuilding = true;
     dontUpdateAutotoolsGnuConfigScripts = true;
     meta.platforms = lib.platforms.unix;
