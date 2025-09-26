@@ -2,19 +2,19 @@ name: Nix CI
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [main, master]
     paths:
-      - 'flake.nix'
-      - 'flake.lock'
-      - '**.nix'
-      - '**.sh'
+      - "flake.nix"
+      - "flake.lock"
+      - "**.nix"
+      - "**.sh"
   pull_request:
-    branches: [ main, master ]
+    branches: [main, master]
     paths:
-      - 'flake.nix'
-      - 'flake.lock'
-      - '**.nix'
-      - '**.sh'
+      - "flake.nix"
+      - "flake.lock"
+      - "**.nix"
+      - "**.sh"
 
 jobs:
   check:
@@ -32,7 +32,7 @@ jobs:
         uses: cachix/cachix-action@v14
         with:
           name: hoshinoaya
-          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+          authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
 
       - name: Check flake
         run: nix flake check
@@ -45,7 +45,18 @@ jobs:
     needs: check
     strategy:
       matrix:
-        package: [ qemu-bap, rizin ]
+        package:
+          [
+            qemu-bap,
+            rizin,
+            binutils-h8500,
+            binutils-mcs-elf,
+            binutils-tricore-elf,
+            gcc-toolchain-tricore,
+            gcc-tricore-elf,
+            gdb-tricore,
+            newlib-tricore-elf,
+          ]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -59,7 +70,7 @@ jobs:
         uses: cachix/cachix-action@v14
         with:
           name: hoshinoaya
-          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+          authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
 
       - name: Build ${{ matrix.package }}
         run: nix build .#${{ matrix.package }} -L
