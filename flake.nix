@@ -30,10 +30,16 @@
         gdb-tricore = callPackage ./packages/gdb-tricore.nix { };
         gcc-toolchain-tricore = callPackage ./packages/gcc-toolchain-tricore.nix { };
 
+        binutils-h8500 = callPackage ./packages/binutils-h8500.nix { };
       in
       {
         packages = {
-          inherit rizin qemu-bap gdb-tricore;
+          inherit
+            rizin
+            qemu-bap
+            gdb-tricore
+            binutils-h8500
+            ;
           inherit (gcc-toolchain-tricore)
             binutils-mcs-elf
             binutils-tricore-elf
