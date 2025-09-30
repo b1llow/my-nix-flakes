@@ -61,8 +61,8 @@ let
     ];
   };
 
-  gccCfg = rec {
-    pname = "gcc-${target}";
+  gcc-stage1 = gccStdenv.mkDerivation rec {
+    pname = "gcc-${target}-stage1";
     version = "14.3.0";
     src = fetchurl {
       url = "https://sourceware.org/pub/gcc/releases/gcc-${version}/gcc-${version}.tar.xz";
@@ -107,22 +107,20 @@ let
       "--with-as=${binutils}/bin/${target}-as"
       "--with-ld=${binutils}/bin/${target}-ld"
     ];
-  };
-  gcc-stage1 = gccStdenv.mkDerivation gccCfg // {
-    pname = gccCfg.pname + "-stage1";
     makeFlags = [
       "all-gcc"
     ];
     installTargets = "install-gcc";
   };
-  gcc = gccStdenv.mkDerivation gccCfg // {
-    buildInputs = gccCfg.buildInputs ++ [
+  gcc = gcc-stage1.overrideAttrs (old: {
+    pname = "gcc-${target}";
+    buildInputs = old.buildInputs ++ [
       newlib
     ];
-    nativeBuildInputs = gccCfg.nativeBuildInputs ++ [
+    nativeBuildInputs = old.nativeBuildInputs ++ [
       newlib
     ];
-    configureFlags = gccCfg.configureFlags ++ [
+    configureFlags = old.configureFlags ++ [
       "--with-sysroot=${newlib}/${target}"
       "--with-native-system-header-dir=/include"
     ];
@@ -131,7 +129,7 @@ let
       "all-target-libgcc"
     ];
     installTargets = "install-gcc install-target-libgcc";
-  };
+  });
   gcc-toolchain = symlinkJoin {
     name = "${target}-toolchain";
     paths = [
