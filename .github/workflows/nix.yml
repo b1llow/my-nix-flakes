@@ -54,6 +54,7 @@ jobs:
             binutils-h8500,
             gcc-toolchain-tricore,
             gdb-tricore,
+            h8300-elf-toolchain,
           ]
     steps:
       - name: Checkout repository

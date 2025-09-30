@@ -29,8 +29,8 @@
         };
         gdb-tricore = callPackage ./packages/gdb-tricore.nix { };
         gcc-toolchain-tricore = callPackage ./packages/gcc-toolchain-tricore.nix { };
-
         binutils-h8500 = callPackage ./packages/binutils-h8500.nix { };
+        h8300-elf-toolchain = callPackage ./packages/gcc-toolchain-h8300.nix { };
       in
       {
         packages = {
@@ -47,6 +47,10 @@
             gcc-tricore-elf
             gcc-toolchain-tricore
             ;
+          h8300-elf-toolchain = h8300-elf-toolchain.gcc-toolchain;
+          h8300-elf-gcc = h8300-elf-toolchain.gcc;
+          h8300-elf-binutils = h8300-elf-toolchain.binutils;
+          h8300-elf-newlib = h8300-elf-toolchain.newlib;
         };
 
         apps = {
@@ -73,6 +77,11 @@
         };
 
         formatter = nixfmt-tree;
+
+        devShells = {
+          default = pkgs.mkShell {
+          };
+        };
       }
     ))
     // {
