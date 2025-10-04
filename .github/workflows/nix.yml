@@ -43,10 +43,11 @@ jobs:
         run: nix flake show
 
   build:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     needs: check
     strategy:
       matrix:
+        os: [ubuntu-latest, macos-latest]
         package:
           [
             qemu-bap,
