@@ -97,5 +97,6 @@ stdenv.mkDerivation rec {
     description = "GDB with TriCore architecture support";
     license = licenses.gpl3Plus;
     platforms = platforms.unix;
+    mainProgram = "${target}-gdb";
   };
 }

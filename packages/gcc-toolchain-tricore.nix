@@ -242,6 +242,14 @@ let
         "all-target-libgcc"
       ];
       installTargets = "install-gcc install-target-libgcc";
+      meta = with lib; {
+        description = "GNU Compiler Collection for ${target-name}";
+        homepage = "https://gcc.gnu.org";
+        license = licenses.gpl3Plus;
+        maintainers = [ "billow" ];
+        platforms = platforms.unix;
+        mainProgram = "${program-prefix}gcc";
+      };
     }
   );
 
