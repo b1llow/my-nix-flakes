@@ -46,6 +46,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     needs: check
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
         package:
