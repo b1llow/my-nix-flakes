@@ -65,6 +65,8 @@ jobs:
         uses: cachix/install-nix-action@v26
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          NIX_FIRST_BUILD_UID: "700"
 
       - name: Setup Cachix
         uses: cachix/cachix-action@v14
