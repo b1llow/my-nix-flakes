@@ -24,6 +24,11 @@
         mesonTools = callPackage ./lib/meson-tools { };
 
         rizin = callPackage ./packages/rizin.nix { inherit mesonTools; };
+        rizinp = rizin.withPlugins (rp: [
+          rp.jsdec
+          rp.rz-ghidra
+          rp.sigdb
+        ]);
         qemu-bap = callPackage ./packages/qemu-bap.nix {
           inherit mesonTools;
         };
@@ -33,9 +38,10 @@
         h8300-elf-toolchain = callPackage ./packages/gcc-toolchain-h8300.nix { };
       in
       {
-        packages = {
+        packages = ({
           inherit
             rizin
+            rizinp
             qemu-bap
             gdb-tricore
             binutils-h8500
@@ -47,28 +53,17 @@
             gcc-tricore-elf
             gcc-toolchain-tricore
             ;
+
           h8300-elf-toolchain = h8300-elf-toolchain.gcc-toolchain;
           h8300-elf-gcc = h8300-elf-toolchain.gcc;
           h8300-elf-binutils = h8300-elf-toolchain.binutils;
           h8300-elf-newlib = h8300-elf-toolchain.newlib;
-        };
+        });
 
         apps = {
-          rizin = {
-            type = "app";
-            program = "${rizin}/bin/rizin";
-          };
           qemu-system-tricore = {
             type = "app";
             program = "${qemu-bap}/bin/qemu-system-tricore";
-          };
-          tricore-elf-gdb = {
-            type = "app";
-            program = "${gdb-tricore}/bin/tricore-elf-gdb";
-          };
-          tricore-elf-gcc = {
-            type = "app";
-            program = "${gcc-toolchain-tricore.gcc-tricore-elf}/bin/tricore-elf-gcc";
           };
         };
 
@@ -79,6 +74,7 @@
         formatter = nixfmt-tree;
 
         devShells = {
+          default = pkgs.mkShell { };
           ocaml = pkgs.mkShell {
             packages = [ ];
             buildInputs = with pkgs.ocamlPackages; [
