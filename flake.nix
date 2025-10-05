@@ -69,18 +69,21 @@
           default = pkgs.mkShell { };
           ocaml = pkgs.mkShell {
             packages = [ ];
-            buildInputs = with pkgs.ocamlPackages; [
-              ocaml
-              dune_3
-              utop
-              ocaml-lsp
-              ocamlformat
-              ounit
-              base
-              batteries
-              #              domainslib
-              zarith
-            ];
+            buildInputs = (
+              (with pkgs.ocamlPackages; [
+                ocaml
+                dune_3
+                utop
+                ocaml-lsp
+                ocamlformat
+                ounit
+                base
+                batteries
+                #              domainslib
+                zarith
+              ])
+              ++ [ pkgs.opam ]
+            );
           };
         };
       }
