@@ -25,13 +25,13 @@
 
   fetchFromGitHub,
   lib,
-  stdenv,
+  gccStdenv,
   ...
 }:
 let
   target = "tricore-elf";
 in
-stdenv.mkDerivation rec {
+gccStdenv.mkDerivation rec {
   pname = "gdb-tricore";
   version = "10.0.50";
   src = fetchFromGitHub {
@@ -66,7 +66,7 @@ stdenv.mkDerivation rec {
     libmpc
     isl
   ]
-  ++ lib.optionals stdenv.isDarwin [ libiconv ];
+  ++ lib.optionals gccStdenv.isDarwin [ libiconv ];
   CFLAGS = "-Wno-error -Wno-error=incompatible-pointer-types";
   CXXFLAGS = "${CFLAGS}";
 

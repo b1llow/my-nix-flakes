@@ -22,14 +22,14 @@
   symlinkJoin,
   fetchFromGitHub,
   lib,
-  stdenv,
+  gccStdenv,
   ...
 }:
 
 let
-  inherit (stdenv) hostPlatform;
+  inherit (gccStdenv) hostPlatform;
 
-  tricoreGccSrc = fetchFromGitHub {
+  gccSrc = fetchFromGitHub {
     owner = "Starforge-Atelier";
     repo = "tricore-gcc";
     rev = "refs/heads/main";
@@ -37,7 +37,7 @@ let
     fetchSubmodules = true;
   };
 
-  tricoreBinutilsSrc = fetchFromGitHub {
+  binutilSrc = fetchFromGitHub {
     owner = "Starforge-Atelier";
     repo = "tricore-binutils-gdb";
     rev = "refs/heads/master";
@@ -45,7 +45,7 @@ let
     fetchSubmodules = true;
   };
 
-  tricoreNewlibSrc = fetchFromGitHub {
+  newlibSrc = fetchFromGitHub {
     owner = "Starforge-Atelier";
     repo = "tricore-newlib-cygwin";
     rev = "refs/heads/master";
@@ -104,15 +104,15 @@ let
     "--enable-64-bit-bfd"
   ];
 
-  target-name = "tricore-elf";
-  program-prefix = "${target-name}-";
+  target = "tricore-elf";
+  program-prefix = "${target}-";
 
-  binutils-mcs-elf = stdenv.mkDerivation (
+  binutils-mcs-elf = gccStdenv.mkDerivation (
     configCommon
     // {
       pname = "binutils-mcs-elf";
       version = "2.42";
-      src = tricoreBinutilsSrc;
+      src = binutilSrc;
       configureFlags = [
         "--target=mcs-elf"
         "--program-prefix=mcs-elf-"
@@ -121,16 +121,16 @@ let
     }
   );
 
-  binutils-tricore-elf = stdenv.mkDerivation (
+  binutils = gccStdenv.mkDerivation (
     configCommon
     // {
-      pname = "binutils-${target-name}";
+      pname = "binutils-${target}";
       version = "2.42";
-      src = tricoreBinutilsSrc;
+      src = binutilSrc;
       buildInputs = configCommon.buildInputs ++ [ binutils-mcs-elf ];
       nativeBuildInputs = configCommon.nativeBuildInputs ++ [ binutils-mcs-elf ];
       configureFlags = [
-        "--target=${target-name}"
+        "--target=${target}"
         "--enable-targets=mcs-elf"
         "--program-prefix=${program-prefix}"
       ]
@@ -139,7 +139,7 @@ let
   );
 
   gccConfigureFlags = [
-    "--target=${target-name}"
+    "--target=${target}"
     "--enable-lib32"
     "--disable-lib64"
     "--enable-languages=c,c++"
@@ -159,18 +159,18 @@ let
     "--disable-libssp"
     "--disable-test-suite"
     "--disable-lto"
-    "--with-as=${binutils-tricore-elf}/bin/${program-prefix}as"
-    "--with-ld=${binutils-tricore-elf}/bin/${program-prefix}ld"
+    "--with-as=${binutils}/bin/${program-prefix}as"
+    "--with-ld=${binutils}/bin/${program-prefix}ld"
   ];
 
-  gcc-stage1-tricore-elf = stdenv.mkDerivation (
+  gcc-stage1 = gccStdenv.mkDerivation (
     configCommon
     // {
-      pname = "gcc11-${target-name}-stage1";
+      pname = "gcc-stage1-${target}";
       version = "11.3.0";
-      src = tricoreGccSrc;
-      buildInputs = configCommon.buildInputs ++ [ binutils-tricore-elf ];
-      nativeBuildInputs = configCommon.nativeBuildInputs ++ [ binutils-tricore-elf ];
+      src = gccSrc;
+      buildInputs = configCommon.buildInputs ++ [ binutils ];
+      nativeBuildInputs = configCommon.nativeBuildInputs ++ [ binutils ];
       configureFlags = gccConfigureFlags;
       hardeningDisable = [ "format" ];
       makeFlags = [
@@ -180,54 +180,54 @@ let
     }
   );
 
-  newlib-tricore-elf = stdenv.mkDerivation (
+  newlib = gccStdenv.mkDerivation (
     configCommon
     // {
-      pname = "newlib-${target-name}";
+      pname = "newlib-${target}";
       version = "4.3.0";
-      src = tricoreNewlibSrc;
+      src = newlibSrc;
       buildInputs = configCommon.buildInputs ++ [
-        binutils-tricore-elf
-        gcc-stage1-tricore-elf
+        binutils
+        gcc-stage1
       ];
       nativeBuildInputs = configCommon.nativeBuildInputs ++ [
-        binutils-tricore-elf
-        gcc-stage1-tricore-elf
+        binutils
+        gcc-stage1
       ];
       preConfigure = ''
-        	export CC_FOR_TARGET=${gcc-stage1-tricore-elf}/bin/${program-prefix}gcc
-        	export CXX_FOR_TARGET=${gcc-stage1-tricore-elf}/bin/${program-prefix}c++
-        	export AR_FOR_TARGET=${binutils-tricore-elf}/bin/${program-prefix}ar
-        	export AS_FOR_TARGET=${binutils-tricore-elf}/bin/${program-prefix}as
-        	export LD_FOR_TARGET=${binutils-tricore-elf}/bin/${program-prefix}ld
-        	export NM_FOR_TARGET=${binutils-tricore-elf}/bin/${program-prefix}nm
-        	export OBJDUMP_FOR_TARGET=${binutils-tricore-elf}/bin/${program-prefix}objdump
-        	export RANLIB_FOR_TARGET=${binutils-tricore-elf}/bin/${program-prefix}ranlib
-        	export STRIP_FOR_TARGET=${binutils-tricore-elf}/bin/${program-prefix}strip
-        	export READELF_FOR_TARGET=${binutils-tricore-elf}/bin/${program-prefix}readelf
+        	export CC_FOR_TARGET=${gcc-stage1}/bin/${program-prefix}gcc
+        	export CXX_FOR_TARGET=${gcc-stage1}/bin/${program-prefix}c++
+        	export AR_FOR_TARGET=${binutils}/bin/${program-prefix}ar
+        	export AS_FOR_TARGET=${binutils}/bin/${program-prefix}as
+        	export LD_FOR_TARGET=${binutils}/bin/${program-prefix}ld
+        	export NM_FOR_TARGET=${binutils}/bin/${program-prefix}nm
+        	export OBJDUMP_FOR_TARGET=${binutils}/bin/${program-prefix}objdump
+        	export RANLIB_FOR_TARGET=${binutils}/bin/${program-prefix}ranlib
+        	export STRIP_FOR_TARGET=${binutils}/bin/${program-prefix}strip
+        	export READELF_FOR_TARGET=${binutils}/bin/${program-prefix}readelf
       '';
       configureFlags = [
-        "--target=${target-name}"
+        "--target=${target}"
       ];
     }
   );
 
-  gcc-tricore-elf = stdenv.mkDerivation (
+  gcc = gccStdenv.mkDerivation (
     configCommon
     // {
-      pname = "gcc11-${target-name}";
+      pname = "gcc-${target}";
       version = "11.3.0";
-      src = tricoreGccSrc;
+      src = gccSrc;
       buildInputs = configCommon.buildInputs ++ [
-        binutils-tricore-elf
-        newlib-tricore-elf
+        binutils
+        newlib
       ];
       nativeBuildInputs = configCommon.nativeBuildInputs ++ [
-        binutils-tricore-elf
-        newlib-tricore-elf
+        binutils
+        newlib
       ];
       configureFlags = gccConfigureFlags ++ [
-        "--with-sysroot=${newlib-tricore-elf}/${target-name}"
+        "--with-sysroot=${newlib}/${target}"
         "--with-native-system-header-dir=/include"
       ];
       preConfigure = ''
@@ -243,7 +243,7 @@ let
       ];
       installTargets = "install-gcc install-target-libgcc";
       meta = with lib; {
-        description = "GNU Compiler Collection for ${target-name}";
+        description = "GNU Compiler Collection for ${target}";
         homepage = "https://gcc.gnu.org";
         license = licenses.gpl3Plus;
         maintainers = [ "billow" ];
@@ -252,22 +252,21 @@ let
       };
     }
   );
-
-  gcc-toolchain-tricore = symlinkJoin {
-    name = "tricore-elf-toolchain";
-    paths = [
-      binutils-tricore-elf
-      gcc-tricore-elf
-      newlib-tricore-elf
-    ];
-  };
 in
-{
-  inherit
-    binutils-mcs-elf
-    binutils-tricore-elf
-    newlib-tricore-elf
-    gcc-tricore-elf
-    gcc-toolchain-tricore
-    ;
+symlinkJoin {
+  name = "gcc-toolchain-${target}";
+  paths = [
+    binutils
+    gcc
+    newlib
+  ];
+
+  passthru = {
+    inherit
+      gcc
+      binutils
+      newlib
+      binutils-mcs-elf
+      ;
+  };
 }

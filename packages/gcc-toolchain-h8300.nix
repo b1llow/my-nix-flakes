@@ -138,21 +138,20 @@ let
       mainProgram = "${target}-gcc";
     };
   });
-  gcc-toolchain = symlinkJoin {
-    name = "${target}-toolchain";
-    paths = [
-      binutils
-      newlib
-      gcc
-    ];
-  };
-in
 
-{
-  inherit
+in
+symlinkJoin {
+  name = "${target}-toolchain";
+  paths = [
     binutils
     newlib
     gcc
-    gcc-toolchain
-    ;
+  ];
+  passthru = {
+    inherit
+      gcc
+      binutils
+      newlib
+      ;
+  };
 }

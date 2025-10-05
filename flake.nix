@@ -19,7 +19,7 @@
         pkgs = import nixpkgs {
           inherit system;
         };
-        inherit (pkgs) callPackage nixfmt-tree;
+        inherit (pkgs) callPackage lib nixfmt-tree;
 
         mesonTools = callPackage ./lib/meson-tools { };
 
@@ -29,13 +29,15 @@
           rp.rz-ghidra
           rp.sigdb
         ]);
+
         qemu-bap = callPackage ./packages/qemu-bap.nix {
           inherit mesonTools;
         };
-        gdb-tricore = callPackage ./packages/gdb-tricore.nix { };
-        gcc-toolchain-tricore = callPackage ./packages/gcc-toolchain-tricore.nix { };
         binutils-h8500 = callPackage ./packages/binutils-h8500.nix { };
-        h8300-elf-toolchain = callPackage ./packages/gcc-toolchain-h8300.nix { };
+        gdb-tricore = callPackage ./packages/gdb-tricore.nix { };
+
+        gcc-toolchain-tricore-elf = callPackage ./packages/gcc-toolchain-tricore.nix { };
+        gcc-toolchain-h8300-elf = callPackage ./packages/gcc-toolchain-h8300.nix { };
       in
       {
         packages = ({
@@ -45,19 +47,9 @@
             qemu-bap
             gdb-tricore
             binutils-h8500
+            gcc-toolchain-tricore-elf
+            gcc-toolchain-h8300-elf
             ;
-          inherit (gcc-toolchain-tricore)
-            binutils-mcs-elf
-            binutils-tricore-elf
-            newlib-tricore-elf
-            gcc-tricore-elf
-            gcc-toolchain-tricore
-            ;
-
-          h8300-elf-toolchain = h8300-elf-toolchain.gcc-toolchain;
-          h8300-elf-gcc = h8300-elf-toolchain.gcc;
-          h8300-elf-binutils = h8300-elf-toolchain.binutils;
-          h8300-elf-newlib = h8300-elf-toolchain.newlib;
         });
 
         apps = {

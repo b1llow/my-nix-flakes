@@ -53,10 +53,11 @@ jobs:
           [
             qemu-bap,
             rizin,
+            rizinp,
             binutils-h8500,
-            gcc-toolchain-tricore,
+            gcc-toolchain-tricore-elf,
             gdb-tricore,
-            h8300-elf-toolchain,
+            gcc-toolchain-h8300-elf,
           ]
     steps:
       - name: Checkout repository
