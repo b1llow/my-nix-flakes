@@ -3,15 +3,14 @@
   meson,
   git,
   openssl,
-  autoPatchelfHook,
-  cctools,
+  stdenv,
   lib,
   fetchFromGitHub,
   mesonTools,
   rev ? "deeaa15c902e18b9f40ccd38345a74546e2cd48e",
   sha256 ? "sha256-TS2B4gRHbr19ZadN1jUvTxY+o3kOW1916NZ8zbwrjxg=",
   mesonDepsSha256 ? "sha256-G8YMGFGsja/g/Tioicp9JF8Xcf/az+J/F56APwYEIag=",
-  debug ? true,
+  debug ? false,
   ...
 }:
 let
@@ -58,7 +57,8 @@ let
       patches = filter (x: baseNameOf x != "0001-fix-compilation-with-clang.patch") old.patches;
 
       separateDebugInfo = debug;
-      mesonBuildType = if debug then "debugoptimized" else "release";
+      dontStrip = debug && stdenv.isDarwin;
+      mesonBuildType = if debug then "debug" else "release";
       CFLAGS = (old.CFLAGS or [ ]) ++ (lib.optionals debug [ "-g" ]);
 
       mesonFlags = [ "-Dportable=true" ];
