@@ -12,6 +12,7 @@
   sha256 ? "sha256-TS2B4gRHbr19ZadN1jUvTxY+o3kOW1916NZ8zbwrjxg=",
   mesonDepsSha256 ? "sha256-G8YMGFGsja/g/Tioicp9JF8Xcf/az+J/F56APwYEIag=",
   debug ? true,
+  buildType ? if debug then "debug" else "release",
   ...
 }:
 let
@@ -50,84 +51,94 @@ let
       sigdb = rizin.plugins.sigdb;
     }
   );
+  debugAndDarwin = debug && stdenv.isDarwin;
   rizin' = (
-    (rizin.override { stdenv = if debug then keepDebugInfo stdenv else stdenv; }).overrideAttrs (
-      old:
+    (rizin.override { stdenv = if debugAndDarwin then keepDebugInfo stdenv else stdenv; }).overrideAttrs
       (
-        {
-          pname = "rizin";
-          version = "0.9.0.${src.rev}";
-          inherit src mesonDeps;
-          patches = filter (x: baseNameOf x != "0001-fix-compilation-with-clang.patch") old.patches;
+        finalAttrs: prevAttrs:
+        (
+          {
+            pname = "rizin";
+            version = "0.9.0.${src.rev}";
+            inherit src mesonDeps;
+            patches = filter (x: baseNameOf x != "0001-fix-compilation-with-clang.patch") prevAttrs.patches;
 
-          separateDebugInfo = debug;
-          mesonBuildType = if debug then "debug" else "release";
+            separateDebugInfo = debug;
+            mesonBuildType = buildType;
 
-          mesonFlags = [ "-Dportable=true" ];
-          nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [
-            mesonTools.configHook
-          ];
-          buildInputs = [ ];
+            mesonFlags = [ "-Dportable=true" ];
+            nativeBuildInputs = (prevAttrs.nativeBuildInputs or [ ]) ++ [
+              mesonTools.configHook
+            ];
+            buildInputs = [ ];
 
-          passthru = rec {
-            plugins = usePlugins rizin';
-            withPlugins =
-              filter:
-              ((rizin.withPlugins filter).override {
-                rizin = rizin';
-                plugins = filter plugins;
-              });
-          };
-        }
-        // lib.optionalAttrs (debug && stdenv.isDarwin) {
-          dontStrip = true;
-          outputs =
-            (old.outputs or [
-              "out"
-            ]
-            )
-            ++ [ "debug" ];
-          postInstall = (old.postInstall or "") + ''
-                set -euo pipefail
-                mkdir -p $debug/bin $debug/lib
-                shopt -s nullglob
-                mkdir -p $debug/.uuids
+            passthru = rec {
+              plugins = usePlugins rizin';
+              withPlugins =
+                filter:
+                ((rizin.withPlugins filter).override {
+                  rizin = rizin';
+                  plugins = filter plugins;
+                });
+            };
+          }
+          // lib.optionalAttrs debugAndDarwin {
+            dontStrip = true;
+            outputs =
+              (prevAttrs.outputs or [
+                "out"
+              ]
+              )
+              ++ [ "debug" ];
+            preConfigure = (prevAttrs.preConfigure or "") + ''
+              echo "source root: $PWD"
+              compdir=${finalAttrs.pname}
+              export NIX_CFLAGS_COMPILE+=" \
+                          -fdebug-prefix-map=$PWD=/$compdir \
+                          -ffile-prefix-map=$PWD=/$compdir \
+                          -fdebug-compilation-dir=/$compdir/build"
+            '';
+            postInstall = (prevAttrs.postInstall or "") + ''
+              set -euo pipefail
+              mkdir -p $debug/bin $debug/lib
+              shopt -s nullglob
+              mkdir -p $debug/.uuids
 
-                mk_dsym() {
-                  local bin="$1"
-                  local outdir="$2"
-                  local uuid="$(dwarfdump --uuid "$bin" | sed -n 's/.*UUID: \([0-9A-F-]*\).*/\1/p' | head -n1)"
-                  local canon="$debug/.store/$uuid.dSYM"
-                  local base="$(basename "$bin")"
-                  local bindsym="$outdir/$base.dSYM"
-                  local dwarf="$canon/Contents/Resources/DWARF/$base"
+              mk_dsym() {
+                local bin="$1"
+                local outdir="$2"
+                local uuid="$(dwarfdump --uuid "$bin" | sed -n 's/.*UUID: \([0-9A-F-]*\).*/\1/p' | head -n1)"
+                local canon="$debug/.store/$uuid.dSYM"
+                local base="$(basename "$bin")"
+                local bindsym="$outdir/$base.dSYM"
+                local dwarf="$canon/Contents/Resources/DWARF/$base"
 
-                  if [ -f "$canon" ]; then
-                    ln -sfn "$canon" "$bindsym"
-                  else
-                    dsymutil "$bin" -o "$canon"
-                    ln -sfn "$canon" "$bindsym"
+                if [ -f "$canon" ]; then
+                  ln -sfn "$canon" "$bindsym"
+                else
+                  dsymutil "$bin" -o "$canon"
+                  ln -sfn "$canon" "$bindsym"
 
-                    hex="''${uuid//-/}"
-                    dir="$debug/uuidmap/''${hex:0:4}/''${hex:4:4}/''${hex:8:4}/''${hex:12:4}/''${hex:16:4}"
-                    mkdir -p "$dir"
-                    dwarf_uuid="$dir/''${hex:20:12}"
-                    ln -sfn "$dwarf" "$dwarf_uuid"
-                    echo "$bindsym: $dwarf_uuid -> $dwarf"
-                  fi
-                }
+                  hex="''${uuid//-/}"
+                  dir="$debug/uuidmap/''${hex:0:4}/''${hex:4:4}/''${hex:8:4}/''${hex:12:4}/''${hex:16:4}"
+                  mkdir -p "$dir"
+                  dwarf_uuid="$dir/''${hex:20:12}"
+                  ln -sfn "$dwarf" "$dwarf_uuid"
+                  echo "$bindsym: $dwarf_uuid -> $dwarf"
+                fi
+              }
 
-                for f in $out/bin/* $out/lib/*.dylib; do
-                  [ -f "$f" ] || continue
-                  mk_dsym "$f" "$debug/$(basename $(dirname "$f"))"
-                done
+              for f in $out/bin/* $out/lib/*.dylib; do
+                [ -f "$f" ] || continue
+                mk_dsym "$f" "$debug/$(basename $(dirname "$f"))"
+              done
 
-                strip -Sx $out/bin/* $out/lib/*.dylib || true
-          '';
-          
-        }
+              strip -Sx $out/bin/* $out/lib/*.dylib || true
+            '';
+
+          }
+        )
       )
-    )
   );
 in
 rizin'
