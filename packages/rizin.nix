@@ -11,7 +11,7 @@
   rev ? "deeaa15c902e18b9f40ccd38345a74546e2cd48e",
   sha256 ? "sha256-TS2B4gRHbr19ZadN1jUvTxY+o3kOW1916NZ8zbwrjxg=",
   mesonDepsSha256 ? "sha256-G8YMGFGsja/g/Tioicp9JF8Xcf/az+J/F56APwYEIag=",
-  debug ? true,
+  debug ? false,
   buildType ? if debug then "debug" else "release",
   ...
 }:
